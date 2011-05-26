@@ -530,6 +530,10 @@ time to keep an idle connection
 .IP "\fBtransparent\fR = none | source | destination | both (Unix only)" 4
 .IX Item "transparent = none | source | destination | both (Unix only)"
 enable transparent proxy support on selected platforms
+.IP "\fBxforwardedfor\fR = yes | no" 4
+.IX Item "xforwardedfor = yes | no"
+append an 'X-Forwarded-For:' HTTP request header providing the
+client's IP address to the server.
 .Sp
 Supported options:
 .RS 4
