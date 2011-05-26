@@ -818,6 +818,29 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
     }
 #endif
 
+    /* xforwardedfor */
+    switch(cmd) {
+    case CMD_INIT:
+        section->option.xforwardedfor=0;
+        break;
+    case CMD_EXEC:
+        if(strcasecmp(opt, "xforwardedfor"))
+            break;
+        if(!strcasecmp(arg, "yes"))
+            section->option.xforwardedfor=1;
+        else if(!strcasecmp(arg, "no"))
+            section->option.xforwardedfor=0;
+        else
+            return "argument should be either 'yes' or 'no'";
+        return NULL; /* OK */
+    case CMD_DEFAULT:
+        break;
+    case CMD_HELP:
+        s_log(LOG_NOTICE, "%-15s = yes|no append an HTTP X-Forwarded-For header",
+            "xforwardedfor");
+        break;
+    }
+
     /* exec */
     switch(cmd) {
     case CMD_INIT:
