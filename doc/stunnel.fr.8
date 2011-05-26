@@ -397,6 +397,10 @@ Durée d'attente sur une connexion inactive
 .IP "\fBtransparent\fR = yes | no (Unix seulement)" 4
 .IX Item "transparent = yes | no (Unix seulement)"
 Mode mandataire transparent
+.IP "\fBxforwardedfor\fR = yes | no" 4
+.IX Item "xforwardedfor = yes | no"
+Ajoute un en-t�te 'X-Forwarded-For:' dans la requ�te HTTP fournissant
+au serveur l'adresse IP du client.
 .Sp
 Ré\-écrit les adresses pour qu'elles apparaissent provenir de la
 machine client \s-1SSL\s0 plutôt que de celle qui exécute \fBstunnel\fR.

@@ -52,6 +52,9 @@
 /* I/O buffer size */
 #define BUFFSIZE 16384
 
+/* maximum space reserved for header insertion in BUFFSIZE */
+#define BUFF_RESERVED 1024
+
 /* IP address and TCP port textual representation length */
 #define IPLEN 128
 
