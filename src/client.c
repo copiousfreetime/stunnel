@@ -87,7 +87,7 @@ CLI *alloc_client_session(SERVICE_OPTIONS *opt, int rfd, int wfd) {
     }
     c->opt=opt;
     /* some options need space to add some information */
-    if (c->opt->option.xforwardedfor)
+    if (c->opt->option.xforwardedfor || c->opt->option.xsslprotocol)
         c->buffsize = BUFFSIZE - BUFF_RESERVED;
     else
         c->buffsize = BUFFSIZE;
@@ -619,7 +619,7 @@ static void transfer(CLI *c) {
             num=SSL_read(c->ssl, c->ssl_buff+c->ssl_ptr, c->buffsize-c->ssl_ptr);
             switch(err=SSL_get_error(c->ssl, num)) {
             case SSL_ERROR_NONE:
-                if (c->buffsize != BUFFSIZE && c->opt->option.xforwardedfor) { /* some work left to do */
+                if (c->buffsize != BUFFSIZE && (c->opt->option.xforwardedfor || c->opt->option.xsslprotocol) ) { /* some work left to do */
                     int last = c->ssl_ptr;
                     c->ssl_ptr += num;
 
@@ -676,6 +676,24 @@ static void transfer(CLI *c) {
                             * as wee need to.
                             */
                         }
+
+                        if (c->opt->option.xsslprotocol) {
+                            /* X-SSL-Protocol: xxxxx\r\n\0 */
+                            char xsslp[16 + SSL_PROTO_LEN + 3];
+
+                            /* We will insert our X-SSL-Protocol: header here.
+                            * We need to write the protocol, but if we use
+                            * sprintf, it will pad with the terminating 0.
+                            * So we will pass via a temporary buffer allocated
+                            * on the stack.
+                            */
+                            strncpy(xsslp, "X-SSL-Protocol: ", 16);
+                            strcat(xsslp, SSL_get_version(c->ssl));
+                            strcat(xsslp, "\r\n");
+                            buffer_insert(c->ssl_buff, &last, &c->ssl_ptr, c->buffsize, xsslp);
+                       }
+
+
                     }
                 }
                 else

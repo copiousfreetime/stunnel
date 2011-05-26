@@ -55,6 +55,9 @@
 /* maximum space reserved for header insertion in BUFFSIZE */
 #define BUFF_RESERVED 1024
 
+/* SSL Protocol Length (SSLv2, SSLv3, TLSv1, unknown) */
+#define SSL_PROTO_LEN 7
+
 /* IP address and TCP port textual representation length */
 #define IPLEN 128
 

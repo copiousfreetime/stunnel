@@ -841,6 +841,29 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
         break;
     }
 
+    /* xsslprotocol */
+    switch(cmd) {
+    case CMD_INIT:
+        section->option.xsslprotocol=0;
+        break;
+    case CMD_EXEC:
+        if(strcasecmp(opt, "xsslprotocol"))
+            break;
+        if(!strcasecmp(arg, "yes"))
+            section->option.xsslprotocol=1;
+        else if(!strcasecmp(arg, "no"))
+            section->option.xsslprotocol=0;
+        else
+            return "argument should be either 'yes' or 'no'";
+        return NULL; /* OK */
+    case CMD_DEFAULT:
+        break;
+    case CMD_HELP:
+        s_log(LOG_NOTICE, "%-15s = yes|no append an HTTP X-SSL-Protocol header",
+            "xsslprotocol");
+        break;
+    }
+
     /* exec */
     switch(cmd) {
     case CMD_INIT:
