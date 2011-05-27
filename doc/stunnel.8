@@ -563,6 +563,11 @@ enable transparent proxy support on selected platforms
 .IX Item "xforwardedfor = yes | no"
 append an 'X-Forwarded-For:' HTTP request header providing the
 client's IP address to the server.
+.IP "\fBxsslprotocol\fR = yes | no" 4
+.IX Item "xsslprotocol= yes | no"
+append an 'X-SSL-Protocol:' HTTP request header providing the
+client's SSL protocol to the server. This should be one of SSLv2, SSLv3,
+TLSv1 or unknown. It is the value returned from SSL_get_version().
 .Sp
 Supported values:
 .RS 4
