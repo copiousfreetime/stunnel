@@ -559,15 +559,6 @@ time to keep an idle connection
 .IP "\fBtransparent\fR = none | source | destination | both (Unix only)" 4
 .IX Item "transparent = none | source | destination | both (Unix only)"
 enable transparent proxy support on selected platforms
-.IP "\fBxforwardedfor\fR = yes | no" 4
-.IX Item "xforwardedfor = yes | no"
-append an 'X-Forwarded-For:' HTTP request header providing the
-client's IP address to the server.
-.IP "\fBxsslprotocol\fR = yes | no" 4
-.IX Item "xsslprotocol= yes | no"
-append an 'X-SSL-Protocol:' HTTP request header providing the
-client's SSL protocol to the server. This should be one of SSLv2, SSLv3,
-TLSv1 or unknown. It is the value returned from SSL_get_version().
 .Sp
 Supported values:
 .RS 4
@@ -680,6 +671,15 @@ certificate is accepted regardless of its Common Name.  For this reason a
 dedicated \s-1CA\s0 should be used with level 2, and not a generic \s-1CA\s0 commonly used
 for webservers.  Level 3 is preferred for point-to-point connections.
 .RE
+.IP "\fBxforwardedfor\fR = yes | no" 4
+.IX Item "xforwardedfor = yes | no"
+Append an 'X-Forwarded-For:' HTTP request header providing the
+client's IP address to the server.
+.IP "\fBxsslprotocol\fR = yes | no" 4
+.IX Item "xsslprotocol= yes | no"
+Append an 'X-SSL-Protocol:' HTTP request header providing the
+client's SSL protocol to the server. This should be one of SSLv2, SSLv3,
+TLSv1 or unknown. It is the value returned from SSL_get_version().
 .SH "RETURN VALUE"
 .IX Header "RETURN VALUE"
 \&\fBstunnel\fR returns zero on success, non-zero on error.

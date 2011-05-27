@@ -411,8 +411,12 @@ option ne se combine pas au mode mandataire (I<connect>) sauf si la
 route par défaut du client vers la cible passe par l'hôte qui fait
 tourner B<stunnel>, qui ne peut être localhost.
 
-=back
+=item B<xforwardedfor> = yes | no
 
+Ajoute un en-tête 'X-Forwarded-For:' dans la requête HTTP fournissant au serveur
+l'adresse IP du client.
+
+=back
 
 =head1 VALEUR DE RETOUR
 

@@ -702,8 +702,18 @@ certificate is accepted regardless of its Common Name.  For this reason a
 dedicated CA should be used with level 2, and not a generic CA commonly used
 for webservers.  Level 3 is preferred for point-to-point connections.
 
-=back
+=item B<xforwardedfor> = yes | no
 
+Append an 'X-Forwarded-For:' HTTP request header providing the client's IP
+address to the server.
+
+=item B<xsslprotocol> = yes | no
+
+Append an 'X-SSL-Protocol:' HTTP request header providing the
+client's SSL protocol to the server. This should be one of SSLv2, SSLv3,
+TLSv1 or unknown. It is the value returned from SSL_get_version().
+
+=back
 
 =head1 RETURN VALUE
 
