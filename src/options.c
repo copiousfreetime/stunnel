@@ -140,7 +140,11 @@ static char *parse_global_option(CMD cmd, char *opt, char *arg) {
     case CMD_INIT:
         new_global_options.debug_level=LOG_NOTICE;
 #if !defined (USE_WIN32) && !defined (__vms)
+#if defined(LOG_AUTHPRIV)
+        new_global_options.facility=LOG_AUTHPRIV;
+#else
         new_global_options.facility=LOG_DAEMON;
+#endif
 #endif
         break;
     case CMD_EXEC:

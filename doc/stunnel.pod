@@ -132,7 +132,7 @@ info (6), or debug (7).  All logs for the specified level and
 all levels numerically less than it will be shown.  Use B<debug = debug> or
 B<debug = 7> for greatest debugging output.  The default is notice (5).
 
-The syslog facility 'daemon' will be used unless a facility name is supplied.
+The syslog facility 'authpriv' will be used unless a facility name is supplied.
 (Facilities are not supported on Win32.)
 
 Case is ignored for both facilities and levels.
