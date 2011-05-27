@@ -172,6 +172,7 @@ typedef struct service_options_struct {
         unsigned int client:1;
         unsigned int delayed_lookup:1;
         unsigned int xforwardedfor:1;
+        unsigned int xsslprotocol:1;
         unsigned int accept:1;
         unsigned int remote:1;
         unsigned int retry:1; /* loop remote+program */
