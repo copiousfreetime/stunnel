@@ -55,7 +55,7 @@ static int section_init(int, SERVICE_OPTIONS *, int);
 static int parse_debug_level(char *);
 static int parse_ssl_option(char *);
 static int print_socket_options(void);
-static void print_option(char *, int, OPT_UNION *);
+static char *print_option(int, OPT_UNION *);
 static int parse_socket_option(char *);
 static char *parse_ocsp_url(SERVICE_OPTIONS *, char *);
 static unsigned long parse_ocsp_flag(char *);
@@ -63,7 +63,7 @@ static unsigned long parse_ocsp_flag(char *);
 static void syntax(CONF_TYPE);
 static void config_error(int, const char *, const char *);
 static void section_error(int, const char *, const char *);
-static char *stralloc(char *);
+static char *str_dup_err(char *);
 #ifndef USE_WIN32
 static char **argalloc(char *);
 #endif
@@ -102,7 +102,7 @@ static char *parse_global_option(CMD cmd, char *opt, char *arg) {
     case CMD_EXEC:
         if(strcasecmp(opt, "chroot"))
             break;
-        new_global_options.chroot_dir=stralloc(arg);
+        new_global_options.chroot_dir=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
         break;
@@ -177,7 +177,7 @@ static char *parse_global_option(CMD cmd, char *opt, char *arg) {
     case CMD_EXEC:
         if(strcasecmp(opt, "EGD"))
             break;
-        new_global_options.egd_sock=stralloc(arg);
+        new_global_options.egd_sock=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
 #ifdef EGD_SOCKET
@@ -284,7 +284,7 @@ static char *parse_global_option(CMD cmd, char *opt, char *arg) {
     case CMD_EXEC:
         if(strcasecmp(opt, "output"))
             break;
-        new_global_options.output_file=stralloc(arg);
+        new_global_options.output_file=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
         break;
@@ -303,7 +303,7 @@ static char *parse_global_option(CMD cmd, char *opt, char *arg) {
         if(strcasecmp(opt, "pid"))
             break;
         if(arg[0]) /* is argument not empty? */
-            new_global_options.pidfile=stralloc(arg);
+            new_global_options.pidfile=str_dup_err(arg);
         else
             new_global_options.pidfile=NULL; /* empty -> do not create a pid file */
         return NULL; /* OK */
@@ -344,7 +344,7 @@ static char *parse_global_option(CMD cmd, char *opt, char *arg) {
     case CMD_EXEC:
         if(strcasecmp(opt, "RNDfile"))
             break;
-        new_global_options.rand_file=stralloc(arg);
+        new_global_options.rand_file=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
 #ifdef RANDOM_FILE
@@ -383,7 +383,7 @@ static char *parse_global_option(CMD cmd, char *opt, char *arg) {
     /* service */
     switch(cmd) {
     case CMD_INIT:
-        new_service_options.servname=stralloc("stunnel");
+        new_service_options.servname=str_dup_err("stunnel");
 #if defined(USE_WIN32) && !defined(_WIN32_WCE)
         new_global_options.win32_service="stunnel";
 #endif
@@ -391,9 +391,9 @@ static char *parse_global_option(CMD cmd, char *opt, char *arg) {
     case CMD_EXEC:
         if(strcasecmp(opt, "service"))
             break;
-        new_service_options.servname=stralloc(arg);
+        new_service_options.servname=str_dup_err(arg);
 #if defined(USE_WIN32) && !defined(_WIN32_WCE)
-        new_global_options.win32_service=stralloc(arg);
+        new_global_options.win32_service=str_dup_err(arg);
 #endif
         return NULL; /* OK */
     case CMD_DEFAULT:
@@ -577,7 +577,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
         if(strcasecmp(opt, "CApath"))
             break;
         if(arg[0]) /* not empty */
-            section->ca_dir=stralloc(arg);
+            section->ca_dir=str_dup_err(arg);
         else
             section->ca_dir=NULL;
         return NULL; /* OK */
@@ -605,7 +605,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
         if(strcasecmp(opt, "CAfile"))
             break;
         if(arg[0]) /* not empty */
-            section->ca_file=stralloc(arg);
+            section->ca_file=str_dup_err(arg);
         else
             section->ca_file=NULL;
         return NULL; /* OK */
@@ -629,7 +629,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
     case CMD_EXEC:
         if(strcasecmp(opt, "cert"))
             break;
-        section->cert=stralloc(arg);
+        section->cert=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
 #ifdef CONFDIR
@@ -656,7 +656,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
     case CMD_EXEC:
         if(strcasecmp(opt, "ciphers"))
             break;
-        section->cipher_list=stralloc(arg);
+        section->cipher_list=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
         s_log(LOG_NOTICE, "%-15s = %s", "ciphers", STUNNEL_DEFAULT_CIPHER_LIST);
@@ -700,7 +700,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
         if(strcasecmp(opt, "connect"))
             break;
         section->option.remote=1;
-        section->remote_address=stralloc(arg);
+        section->remote_address=str_dup_err(arg);
         if(!section->option.delayed_lookup &&
                 !name2addrlist(&section->remote_addr, arg, DEFAULT_LOOPBACK)) {
             s_log(LOG_INFO, "Cannot resolve '%s' - delaying DNS lookup", arg);
@@ -724,7 +724,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
         if(strcasecmp(opt, "CRLpath"))
             break;
         if(arg[0]) /* not empty */
-            section->crl_dir=stralloc(arg);
+            section->crl_dir=str_dup_err(arg);
         else
             section->crl_dir=NULL;
         return NULL; /* OK */
@@ -744,7 +744,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
         if(strcasecmp(opt, "CRLfile"))
             break;
         if(arg[0]) /* not empty */
-            section->crl_file=stralloc(arg);
+            section->crl_file=str_dup_err(arg);
         else
             section->crl_file=NULL;
         return NULL; /* OK */
@@ -832,12 +832,12 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
         if(strcasecmp(opt, "exec"))
             break;
         section->option.program=1;
-        section->execname=stralloc(arg);
+        section->execname=str_dup_err(arg);
 #ifdef USE_WIN32
-        section->execargs=stralloc(arg);
+        section->execargs=str_dup_err(arg);
 #else
         if(!section->execargs) {
-            section->execargs=calloc(2, sizeof(char *));
+            section->execargs=str_alloc(2*sizeof(char *));
             section->execargs[0]=section->execname;
             section->execargs[1]=NULL; /* to show that it's null-terminated */
         }
@@ -860,7 +860,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
         if(strcasecmp(opt, "execargs"))
             break;
 #ifdef USE_WIN32
-        section->execargs=stralloc(arg);
+        section->execargs=str_dup_err(arg);
 #else
         section->execargs=argalloc(arg);
 #endif
@@ -904,7 +904,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
     case CMD_EXEC:
         if(strcasecmp(opt, "ident"))
             break;
-        section->username=stralloc(arg);
+        section->username=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
         break;
@@ -921,7 +921,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
     case CMD_EXEC:
         if(strcasecmp(opt, "key"))
             break;
-        section->key=stralloc(arg);
+        section->key=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
         break;
@@ -1042,7 +1042,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
     case CMD_EXEC:
         if(strcasecmp(opt, "protocol"))
             break;
-        section->protocol=stralloc(arg);
+        section->protocol=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
         break;
@@ -1061,7 +1061,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
     case CMD_EXEC:
         if(strcasecmp(opt, "protocolAuthentication"))
             break;
-        section->protocol_authentication=stralloc(arg);
+        section->protocol_authentication=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
         break;
@@ -1079,7 +1079,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
     case CMD_EXEC:
         if(strcasecmp(opt, "protocolHost"))
             break;
-        section->protocol_host=stralloc(arg);
+        section->protocol_host=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
         break;
@@ -1097,7 +1097,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
     case CMD_EXEC:
         if(strcasecmp(opt, "protocolPassword"))
             break;
-        section->protocol_password=stralloc(arg);
+        section->protocol_password=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
         break;
@@ -1115,7 +1115,7 @@ static char *parse_service_option(CMD cmd, SERVICE_OPTIONS *section,
     case CMD_EXEC:
         if(strcasecmp(opt, "protocolUsername"))
             break;
-        section->protocol_username=stralloc(arg);
+        section->protocol_username=str_dup_err(arg);
         return NULL; /* OK */
     case CMD_DEFAULT:
         break;
@@ -1554,7 +1554,7 @@ void parse_conf(char *name, CONF_TYPE type) {
 #endif
 
     if(name) /* not reload */
-        filename=stralloc(name);
+        filename=str_dup_err(name);
 
     s_log(LOG_NOTICE, "Reading configuration from %s %s",
         type==CONF_FD ? "descriptor" : "file", filename);
@@ -1605,7 +1605,7 @@ void parse_conf(char *name, CONF_TYPE type) {
             }
             ++config_opt;
             config_opt[strlen(config_opt)-1]='\0';
-            new_section=calloc(1, sizeof(SERVICE_OPTIONS));
+            new_section=str_alloc(sizeof(SERVICE_OPTIONS));
             if(!new_section) {
                 s_log(LOG_ERR, "Fatal memory allocation error");
                 file_close(df);
@@ -1614,7 +1614,7 @@ void parse_conf(char *name, CONF_TYPE type) {
                 die(1);
             }
             memcpy(new_section, &new_service_options, sizeof(SERVICE_OPTIONS));
-            new_section->servname=stralloc(config_opt);
+            new_section->servname=str_dup_err(config_opt);
             new_section->session=NULL;
             new_section->next=NULL;
             section->next=new_section;
@@ -1742,7 +1742,7 @@ typedef struct {
 } facilitylevel;
 
 static int parse_debug_level(char *arg) {
-    char arg_copy[STRLEN];
+    char *arg_copy;
     char *string;
     facilitylevel *fl;
 
@@ -1778,8 +1778,8 @@ static int parse_debug_level(char *arg) {
         {NULL, -1}
     };
 
-    safecopy(arg_copy, arg);
-    string = arg_copy;
+    arg_copy=str_dup_err(arg);
+    string=arg_copy;
 
 /* facilities only make sense on Unix */
 #if !defined (USE_WIN32) && !defined (__vms)
@@ -1934,7 +1934,7 @@ static int print_socket_options(void) {
     socklen_t optlen;
     SOCK_OPT *ptr;
     OPT_UNION val;
-    char line[STRLEN];
+    char *t1, *t2, *t3, *t4, *t5;
 
     fd=socket(AF_INET, SOCK_STREAM, 0);
 
@@ -1943,55 +1943,48 @@ static int print_socket_options(void) {
         "Option", "Accept", "Local", "Remote", "OS default");
     for(ptr=sock_opts; ptr->opt_str; ++ptr) {
         /* display option name */
-        sprintf(line, "    %-16s", ptr->opt_str);
+        t1=str_printf("    %-16s", ptr->opt_str);
         /* display stunnel default values */
-        print_option(line, ptr->opt_type, ptr->opt_val[0]);
-        print_option(line, ptr->opt_type, ptr->opt_val[1]);
-        print_option(line, ptr->opt_type, ptr->opt_val[2]);
+        t2=print_option(ptr->opt_type, ptr->opt_val[0]);
+        t3=print_option(ptr->opt_type, ptr->opt_val[1]);
+        t4=print_option(ptr->opt_type, ptr->opt_val[2]);
         /* display OS default value */
         optlen=sizeof val;
         if(getsockopt(fd, ptr->opt_level,
                 ptr->opt_name, (void *)&val, &optlen)) {
             if(get_last_socket_error()!=ENOPROTOOPT) {
-                s_log(LOG_ERR, "%s", line); /* dump the name and assigned values */
+                /* dump the name and assigned values */
+                s_log(LOG_ERR, "%s%s%s%s", t1, t2, t3, t4);
+                str_free(t1); str_free(t2); str_free(t3); str_free(t4);
                 sockerror("getsockopt");
                 return 0; /* FAILED */
             }
-            safeconcat(line, "    --    "); /* write-only value */
+            t5=str_dup("    --    "); /* write-only value */
         } else
-            print_option(line, ptr->opt_type, &val);
-        s_log(LOG_NOTICE, "%s", line);
+            t5=print_option(ptr->opt_type, &val);
+        s_log(LOG_NOTICE, "%s%s%s%s%s", t1, t2, t3, t4, t5);
+        str_free(t1); str_free(t2); str_free(t3); str_free(t4); str_free(t5);
     }
     return 1; /* OK */
 }
 
-static void print_option(char *line, int type, OPT_UNION *val) {
-    char text[STRLEN];
-
-    if(!val) {
-        safecopy(text, "    --    ");
-    } else {
-        switch(type) {
-        case TYPE_FLAG:
-        case TYPE_INT:
-            sprintf(text, "%10d", val->i_val);
-            break;
-        case TYPE_LINGER:
-            sprintf(text, "%d:%-8d",
-                val->linger_val.l_onoff, val->linger_val.l_linger);
-            break;
-        case TYPE_TIMEVAL:
-            sprintf(text, "%6d:%-3d",
-                (int)val->timeval_val.tv_sec, (int)val->timeval_val.tv_usec);
-            break;
-        case TYPE_STRING:
-            sprintf(text, "%10s", val->c_val);
-            break;
-        default:
-            safecopy(text, "  Ooops?  "); /* internal error? */
-        }
+static char *print_option(int type, OPT_UNION *val) {
+    if(!val)
+        return str_dup("    --    ");
+    switch(type) {
+    case TYPE_FLAG:
+    case TYPE_INT:
+        return str_printf("%10d", val->i_val);
+    case TYPE_LINGER:
+        return str_printf("%d:%-8d",
+            val->linger_val.l_onoff, val->linger_val.l_linger);
+    case TYPE_TIMEVAL:
+        return str_printf("%6d:%-3d",
+            (int)val->timeval_val.tv_sec, (int)val->timeval_val.tv_usec);
+    case TYPE_STRING:
+        return str_printf("%10s", val->c_val);
     }
-    safeconcat(line, text);
+    return str_dup("  Ooops?  "); /* internal error? */
 }
 
 static int parse_socket_option(char *arg) {
@@ -2024,7 +2017,7 @@ static int parse_socket_option(char *arg) {
             break; /* option name found */
         ++ptr;
     }
-    ptr->opt_val[socket_type]=calloc(1, sizeof(OPT_UNION));
+    ptr->opt_val[socket_type]=str_alloc(sizeof(OPT_UNION));
     switch(ptr->opt_type) {
     case TYPE_FLAG:
     case TYPE_INT:
@@ -2086,7 +2079,7 @@ static char *parse_ocsp_url(SERVICE_OPTIONS *section, char *arg) {
             " - additional stunnel service needs to be defined";
     if(!hostport2addrlist(&section->ocsp_addr, host, port))
         return "Failed to resolve OCSP server address";
-    section->ocsp_path=stralloc(path);
+    section->ocsp_path=str_dup_err(path);
     if(host)
         OPENSSL_free(host);
     if(port)
@@ -2167,14 +2160,10 @@ static void section_error(int num, const char *name, const char *str) {
     s_log(LOG_ERR, "Line %d: End of section %s: %s", num, name, str);
 }
 
-static char *stralloc(char *str) { /* strdup() with error checking */
+static char *str_dup_err(char *str) { /* str_dup() with error checking */
     char *retval;
 
-#ifdef USE_WIN32
-    retval=_strdup(str);
-#else
-    retval=strdup(str);
-#endif	
+    retval=str_dup(str);
     if(!retval) {
         s_log(LOG_ERR, "Fatal memory allocation error");
         die(2);
@@ -2189,8 +2178,8 @@ static char **argalloc(char *str) { /* allocate 'exec' argumets */
     char *ptr, **retval;
 
     max_arg=strlen(str)/2+1;
-    ptr=stralloc(str);
-    retval=calloc(max_arg+1, sizeof(char *));
+    ptr=str_dup_err(str);
+    retval=str_alloc((max_arg+1)*sizeof(char *));
     if(!retval) {
         s_log(LOG_ERR, "Fatal memory allocation error");
         die(2);
